@@ -9,6 +9,7 @@ import { approvalsRoutes } from "./modules/approvals/approvals.routes";
 import { authRoutes } from "./modules/auth/auth.routes";
 import { projectsRoutes } from "./modules/projects/projects.routes";
 import { tasksRoutes } from "./modules/tasks/tasks.routes";
+import { usersRoutes } from "./modules/users/users.routes";
 
 const app = express();
 
@@ -28,6 +29,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectsRoutes);
 app.use("/api/tasks", tasksRoutes);
 app.use("/api/approvals", approvalsRoutes);
+app.use("/api/users", usersRoutes);
 
 app.use((_req, _res, next) => {
   next(new AppError(404, "ROUTE_NOT_FOUND", "Route not found"));
