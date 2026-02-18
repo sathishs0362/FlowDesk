@@ -1,0 +1,9 @@
+{
+	"name": "flowdesk",
+	"private": true,
+	"scripts": {
+		"dev:web": "pnpm --filter web dev",
+		"dev:api": "pnpm --filter api dev",
+		"dev": "pnpm -r --parallel dev"
+	}
+}

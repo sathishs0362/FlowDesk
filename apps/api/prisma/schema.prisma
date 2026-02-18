@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  admin
+  manager
+  employee
+}
+
+enum TaskStatus {
+  DRAFT
+  IN_PROGRESS
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+enum ApprovalStatus {
+  approved
+  rejected
+}
+
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(employee)
+  createdAt DateTime @default(now())
+
+  projects      Project[]  @relation("ProjectsCreatedBy")
+  assignedTasks Task[]     @relation("TaskAssignedTo")
+  createdTasks  Task[]     @relation("TaskCreatedBy")
+  approvals     Approval[] @relation("ApprovalBy")
+}
+
+model Project {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String
+  description String?
+  createdById String   @db.Uuid
+  createdAt   DateTime @default(now())
+
+  createdBy User   @relation("ProjectsCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  tasks     Task[]
+}
+
+model Task {
+  id           String     @id @default(uuid()) @db.Uuid
+  title        String
+  description  String?
+  status       TaskStatus @default(DRAFT)
+  projectId    String     @db.Uuid
+  assignedToId String     @db.Uuid
+  createdById  String     @db.Uuid
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  project    Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignedTo User       @relation("TaskAssignedTo", fields: [assignedToId], references: [id], onDelete: Restrict)
+  createdBy  User       @relation("TaskCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  approvals  Approval[]
+}
+
+model Approval {
+  id           String         @id @default(uuid()) @db.Uuid
+  taskId       String         @db.Uuid
+  approvedById String         @db.Uuid
+  status       ApprovalStatus
+  comment      String?
+  createdAt    DateTime       @default(now())
+
+  task       Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  approvedBy User @relation("ApprovalBy", fields: [approvedById], references: [id], onDelete: Restrict)
+
+  @@index([taskId])
+}

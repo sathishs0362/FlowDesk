@@ -1,0 +1,14 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.tasksRoutes = void 0;
+const client_1 = require("@prisma/client");
+const express_1 = require("express");
+const auth_middleware_1 = require("../../middleware/auth.middleware");
+const role_middleware_1 = require("../../middleware/role.middleware");
+const tasks_controller_1 = require("./tasks.controller");
+const tasksRoutes = (0, express_1.Router)();
+exports.tasksRoutes = tasksRoutes;
+tasksRoutes.use(auth_middleware_1.authMiddleware);
+tasksRoutes.post("/", (0, role_middleware_1.roleMiddleware)([client_1.Role.admin, client_1.Role.manager]), tasks_controller_1.createTaskHandler);
+tasksRoutes.get("/", tasks_controller_1.getTasksHandler);
+tasksRoutes.patch("/:id/status", tasks_controller_1.updateTaskStatusHandler);

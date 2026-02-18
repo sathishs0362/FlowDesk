@@ -1,0 +1,14 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.projectsRoutes = void 0;
+const client_1 = require("@prisma/client");
+const express_1 = require("express");
+const auth_middleware_1 = require("../../middleware/auth.middleware");
+const role_middleware_1 = require("../../middleware/role.middleware");
+const projects_controller_1 = require("./projects.controller");
+const projectsRoutes = (0, express_1.Router)();
+exports.projectsRoutes = projectsRoutes;
+projectsRoutes.use(auth_middleware_1.authMiddleware);
+projectsRoutes.post("/", (0, role_middleware_1.roleMiddleware)([client_1.Role.admin, client_1.Role.manager]), projects_controller_1.createProjectHandler);
+projectsRoutes.get("/", projects_controller_1.getProjectsHandler);
+projectsRoutes.get("/:id", projects_controller_1.getProjectByIdHandler);
