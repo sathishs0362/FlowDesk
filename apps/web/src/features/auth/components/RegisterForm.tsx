@@ -21,7 +21,10 @@ export const RegisterForm = () => {
 
   return (
     <form className="card auth-form" onSubmit={onSubmit}>
-      <h2>Create your FlowDesk account</h2>
+      <div className="auth-form-head">
+        <h2>Create your account</h2>
+        <p className="muted">Set your role and start collaborating.</p>
+      </div>
       <Input label="Name" value={name} onChange={(event) => setName(event.target.value)} required />
       <Input
         label="Email"
@@ -53,10 +56,10 @@ export const RegisterForm = () => {
       </label>
 
       <Button type="submit" fullWidth disabled={isLoading}>
-        {isLoading ? 'Creating account...' : 'Register'}
+        {isLoading ? 'Creating account...' : 'Create account'}
       </Button>
       <Button type="button" variant="secondary" fullWidth onClick={() => navigate('/login')}>
-        Back to Sign In
+        Back to sign in
       </Button>
     </form>
   );

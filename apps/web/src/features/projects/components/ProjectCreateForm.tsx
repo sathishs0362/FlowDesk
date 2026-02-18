@@ -3,17 +3,20 @@ import type { FormEvent } from 'react';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { useCreateProjectMutation } from '../projects.api';
+import { useWorkspace } from '../../../hooks/useWorkspace';
 
 export const ProjectCreateForm = () => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [createProject, { isLoading }] = useCreateProjectMutation();
+  const { currentWorkspaceId } = useWorkspace();
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     await createProject({
       name,
       description: description || undefined,
+      workspaceId: currentWorkspaceId ?? undefined,
     }).unwrap();
     setName('');
     setDescription('');

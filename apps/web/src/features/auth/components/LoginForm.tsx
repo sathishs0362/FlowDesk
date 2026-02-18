@@ -19,7 +19,10 @@ export const LoginForm = () => {
 
   return (
     <form className="card auth-form" onSubmit={onSubmit}>
-      <h2>Sign in to FlowDesk</h2>
+      <div className="auth-form-head">
+        <h2>Sign in</h2>
+        <p className="muted">Continue to your dashboard.</p>
+      </div>
       <Input
         label="Email"
         type="email"
@@ -38,7 +41,7 @@ export const LoginForm = () => {
         {isLoading ? 'Signing in...' : 'Sign In'}
       </Button>
       <Button type="button" variant="secondary" fullWidth onClick={() => navigate('/register')}>
-        Register
+        Create account
       </Button>
     </form>
   );

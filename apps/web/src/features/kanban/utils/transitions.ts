@@ -1,4 +1,5 @@
 import type { Task, TaskStatus, User } from '../../../types/domain';
+import { hasPermission } from '../../../security/permissions';
 
 export const KANBAN_COLUMNS: TaskStatus[] = [
   'DRAFT',
@@ -13,7 +14,7 @@ export const canDragTask = (task: Task, user: User | null): boolean => {
     return false;
   }
 
-  if (user.role === 'employee') {
+  if (!hasPermission(user.role, 'approve_task')) {
     if (task.assignedToId !== user.id) {
       return false;
     }
@@ -32,7 +33,7 @@ export const canMoveTask = (
     return false;
   }
 
-  if (user.role === 'employee') {
+  if (!hasPermission(user.role, 'approve_task')) {
     if (task.assignedToId !== user.id) {
       return false;
     }
@@ -48,7 +49,7 @@ export const canMoveTask = (
     return false;
   }
 
-  if (user.role === 'admin' || user.role === 'manager') {
+  if (hasPermission(user.role, 'approve_task')) {
     return task.status === 'SUBMITTED' && (targetStatus === 'APPROVED' || targetStatus === 'REJECTED');
   }
 

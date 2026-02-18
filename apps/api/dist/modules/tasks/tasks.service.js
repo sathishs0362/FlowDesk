@@ -31,16 +31,43 @@ const createTask = async (creatorId, input) => {
     });
 };
 exports.createTask = createTask;
-const getTasks = async (userId, role) => {
+const getTasks = async (userId, role, query) => {
+    const where = {};
     if (role === client_1.Role.employee) {
-        return db_1.prisma.task.findMany({
-            where: { assignedToId: userId },
-            orderBy: { createdAt: "desc" },
-        });
+        where.assignedToId = userId;
     }
-    return db_1.prisma.task.findMany({
-        orderBy: { createdAt: "desc" },
-    });
+    else if (query.assignedToId) {
+        where.assignedToId = query.assignedToId;
+    }
+    if (query.projectId) {
+        where.projectId = query.projectId;
+    }
+    if (query.status) {
+        where.status = query.status;
+    }
+    if (query.search) {
+        where.title = {
+            contains: query.search,
+            mode: "insensitive",
+        };
+    }
+    const skip = (query.page - 1) * query.limit;
+    const [items, total] = await Promise.all([
+        db_1.prisma.task.findMany({
+            where,
+            orderBy: { createdAt: "desc" },
+            skip,
+            take: query.limit,
+        }),
+        db_1.prisma.task.count({ where }),
+    ]);
+    return {
+        items,
+        total,
+        page: query.page,
+        limit: query.limit,
+        hasMore: skip + items.length < total,
+    };
 };
 exports.getTasks = getTasks;
 const updateTaskStatus = async (actorId, actorRole, taskId, input) => {

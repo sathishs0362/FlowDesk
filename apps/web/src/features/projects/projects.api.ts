@@ -5,6 +5,7 @@ import type { Project } from '../../types/domain';
 interface CreateProjectRequest {
   name: string;
   description?: string;
+  workspaceId?: string;
 }
 
 export const projectsApi = api.injectEndpoints({

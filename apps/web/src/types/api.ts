@@ -1,7 +1,8 @@
-export interface ApiSuccessResponse<TData> {
+export interface ApiSuccessResponse<TData, TMeta = unknown> {
   success: boolean;
   message: string;
   data: TData;
+  meta?: TMeta;
 }
 
 export interface ApiErrorResponse {

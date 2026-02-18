@@ -1,10 +1,14 @@
 import { ProjectCreateForm } from '../components/ProjectCreateForm';
 import { useGetProjectsQuery } from '../projects.api';
-import { useAuth } from '../../../hooks/auth';
+import { AccessGuard } from '../../../components/security/AccessGuard';
+import { useWorkspace } from '../../../hooks/useWorkspace';
 
 export const ProjectsPage = () => {
-  const { role } = useAuth();
-  const { data: projects = [], isLoading } = useGetProjectsQuery();
+  const { currentWorkspaceId } = useWorkspace();
+  const { data: allProjects = [], isLoading } = useGetProjectsQuery();
+  const projects = allProjects.filter(
+    (project) => !project.workspaceId || project.workspaceId === currentWorkspaceId,
+  );
 
   return (
     <section className="page-grid">
@@ -15,6 +19,8 @@ export const ProjectsPage = () => {
         </div>
         {isLoading ? (
           <p>Loading projects...</p>
+        ) : projects.length === 0 ? (
+          <p className="empty-state">No projects yet. Create your first project to get started.</p>
         ) : (
           <ul className="list">
             {projects.map((project) => (
@@ -27,7 +33,9 @@ export const ProjectsPage = () => {
         )}
       </div>
 
-      {(role === 'admin' || role === 'manager') && <ProjectCreateForm />}
+      <AccessGuard permission="create_project">
+        <ProjectCreateForm />
+      </AccessGuard>
     </section>
   );
 };

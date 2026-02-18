@@ -22,6 +22,20 @@ const updateStatusSchema = z.object({
   comment: z.string().trim().max(1000).optional(),
 });
 
+const getTasksQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(25),
+  projectId: z.string().uuid().optional(),
+  assignedToId: z.string().uuid().optional(),
+  status: z.nativeEnum(TaskStatus).optional(),
+  search: z
+    .string()
+    .trim()
+    .max(200)
+    .optional()
+    .transform((value) => (value && value.length > 0 ? value : undefined)),
+});
+
 export const createTaskHandler = asyncHandler(async (req: Request, res: Response) => {
   if (!req.user) {
     throw new AppError(401, "UNAUTHORIZED", "Authentication required");
@@ -38,9 +52,19 @@ export const getTasksHandler = asyncHandler(async (req: Request, res: Response) 
     throw new AppError(401, "UNAUTHORIZED", "Authentication required");
   }
 
-  const tasks = await getTasks(req.user.id, req.user.role);
+  const query = getTasksQuerySchema.parse(req.query);
+  const result = await getTasks(req.user.id, req.user.role, query);
 
-  return res.status(200).json(new ApiResponse("Tasks fetched successfully", tasks, { total: tasks.length }));
+  return res
+    .status(200)
+    .json(
+      new ApiResponse("Tasks fetched successfully", result.items, {
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        hasMore: result.hasMore,
+      }),
+    );
 });
 
 export const updateTaskStatusHandler = asyncHandler(async (

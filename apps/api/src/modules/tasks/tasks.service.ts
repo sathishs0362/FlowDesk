@@ -1,8 +1,13 @@
-import { ApprovalStatus, Role, Task, TaskStatus } from "@prisma/client";
+import { ApprovalStatus, Prisma, Role, Task, TaskStatus } from "@prisma/client";
 import { AppError } from "../../common/AppError";
 import { prisma } from "../../config/db";
 import { createApproval } from "../approvals/approvals.service";
-import { CreateTaskInput, UpdateTaskStatusInput } from "./tasks.types";
+import {
+  CreateTaskInput,
+  GetTasksQuery,
+  PaginatedTasksResult,
+  UpdateTaskStatusInput,
+} from "./tasks.types";
 
 export const createTask = async (
   creatorId: string,
@@ -37,17 +42,53 @@ export const createTask = async (
   });
 };
 
-export const getTasks = async (userId: string, role: Role): Promise<Task[]> => {
+export const getTasks = async (
+  userId: string,
+  role: Role,
+  query: GetTasksQuery,
+): Promise<PaginatedTasksResult<Task>> => {
+  const where: Prisma.TaskWhereInput = {};
+
   if (role === Role.employee) {
-    return prisma.task.findMany({
-      where: { assignedToId: userId },
-      orderBy: { createdAt: "desc" },
-    });
+    where.assignedToId = userId;
+  } else if (query.assignedToId) {
+    where.assignedToId = query.assignedToId;
   }
 
-  return prisma.task.findMany({
-    orderBy: { createdAt: "desc" },
-  });
+  if (query.projectId) {
+    where.projectId = query.projectId;
+  }
+
+  if (query.status) {
+    where.status = query.status;
+  }
+
+  if (query.search) {
+    where.title = {
+      contains: query.search,
+      mode: "insensitive",
+    };
+  }
+
+  const skip = (query.page - 1) * query.limit;
+
+  const [items, total] = await Promise.all([
+    prisma.task.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: query.limit,
+    }),
+    prisma.task.count({ where }),
+  ]);
+
+  return {
+    items,
+    total,
+    page: query.page,
+    limit: query.limit,
+    hasMore: skip + items.length < total,
+  };
 };
 
 export const updateTaskStatus = async (
